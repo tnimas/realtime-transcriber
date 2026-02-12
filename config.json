@@ -1,0 +1,9 @@
+{
+  "outputDir": "%USERPROFILE%\\Documents\\Transcriptions\\",
+  "audioDevice": null,
+  "sampleRate": 16000,
+  "vadSilenceThreshold": 800,
+  "vadThreshold": 0.5,
+  "modelDir": "./models/sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8",
+  "vadModelPath": "./models/silero_vad.onnx"
+}

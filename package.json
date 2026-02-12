@@ -1,0 +1,26 @@
+{
+  "name": "transcriber",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "naudiodon": "^2.3.6",
+    "node-windows": "^1.0.0-beta.8",
+    "onnxruntime-node": "^1.24.1",
+    "sherpa-onnx-node": "^1.12.24"
+  },
+  "devDependencies": {
+    "@types/node": "^25.2.3",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
