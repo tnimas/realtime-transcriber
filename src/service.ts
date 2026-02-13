@@ -2,16 +2,19 @@
 import { AudioCapture } from "./audio-capture";
 import { VoiceActivityDetector } from "./vad";
 import { Transcriber } from "./transcriber";
-import { FileWriter } from "./file-writer";
+import { TranscriptionLogger } from "./logger";
 import { SpeakerIdentifier } from "./speaker-identifier";
 import { loadConfig, TranscriberConfig } from "./config";
+import { downloadModel } from "./model-downloader";
+import * as fs from "fs";
+import * as path from "path";
 
 export class TranscriberService {
   private config: TranscriberConfig;
   private audioCapture!: AudioCapture;
   private vad!: VoiceActivityDetector;
   private transcriber!: Transcriber;
-  private fileWriter!: FileWriter;
+  private fileWriter!: TranscriptionLogger;
   private speakerIdentifier!: SpeakerIdentifier;
   private running = false;
 
@@ -21,19 +24,28 @@ export class TranscriberService {
 
   async start(): Promise<void> {
     console.log("Starting transcriber service...");
+    console.log(`ASR model: ${this.config.model}`);
     console.log("Output directory:", this.config.outputDir);
 
+    // Auto-download ASR model if missing
+    if (!fs.existsSync(this.config.modelDir)) {
+      console.log("Model not found, downloading...");
+      const modelsDir = path.resolve("./models");
+      downloadModel(this.config.model, modelsDir);
+      console.log("Model ready.");
+    }
+
     // Initialize components
-    this.fileWriter = new FileWriter(this.config.outputDir);
+    this.fileWriter = new TranscriptionLogger(this.config.outputDir);
 
     this.transcriber = new Transcriber(this.config.modelDir, this.config.sampleRate);
-    console.log("Parakeet v3 model loaded");
+    const modelLabel = this.config.model === "gigaam" ? "GigaAM v2" : "Parakeet v3";
+    console.log(`${modelLabel} model loaded`);
 
     this.vad = new VoiceActivityDetector({
-      modelPath: this.config.vadModelPath,
       threshold: this.config.vadThreshold,
       silenceThresholdMs: this.config.vadSilenceThreshold,
-      sampleRate: this.config.sampleRate as 16000 | 8000,
+      sampleRate: this.config.sampleRate,
     });
     await this.vad.init();
     console.log("Silero VAD loaded");
@@ -42,6 +54,7 @@ export class TranscriberService {
       this.config.speakerModelPath,
       this.config.sampleRate,
       this.config.speakerThreshold,
+      path.join(this.config.outputDir, "speakers.json"),
     );
     console.log("Speaker embedding model loaded");
 

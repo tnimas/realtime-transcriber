@@ -2,15 +2,16 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
+import { type ModelName, getModelDir } from "./model-downloader";
 
 export interface TranscriberConfig {
+  model: ModelName;
   outputDir: string;
   audioDevice: number | null;
   sampleRate: number;
   vadSilenceThreshold: number;
   vadThreshold: number;
   modelDir: string;
-  vadModelPath: string;
   speakerModelPath: string;
   speakerThreshold: number;
 }
@@ -19,20 +20,19 @@ function expandEnvVars(str: string): string {
   return str.replace(/%([^%]+)%/g, (_, key) => process.env[key] || _);
 }
 
-const DEFAULTS: TranscriberConfig = {
+const DEFAULTS: Omit<TranscriberConfig, "modelDir"> = {
+  model: "parakeet",
   outputDir: path.join(os.homedir(), "Documents", "Transcriptions"),
   audioDevice: null,
   sampleRate: 16000,
   vadSilenceThreshold: 800,
   vadThreshold: 0.5,
-  modelDir: "./models/sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8",
-  vadModelPath: "./models/silero_vad.onnx",
   speakerModelPath: "./models/3dspeaker_speech_eres2net_base_sv_zh-cn_3dspeaker_16k.onnx",
   speakerThreshold: 0.4,
 };
 
 export function loadConfig(configPath: string): TranscriberConfig {
-  let raw: Partial<TranscriberConfig> = {};
+  let raw: Record<string, unknown> = {};
   try {
     const content = fs.readFileSync(configPath, "utf-8");
     raw = JSON.parse(content);
@@ -40,11 +40,25 @@ export function loadConfig(configPath: string): TranscriberConfig {
     // Use defaults if config missing or invalid
   }
 
-  const config: TranscriberConfig = { ...DEFAULTS, ...raw };
-  config.outputDir = expandEnvVars(config.outputDir);
-  config.modelDir = path.resolve(expandEnvVars(config.modelDir));
-  config.vadModelPath = path.resolve(expandEnvVars(config.vadModelPath));
-  config.speakerModelPath = path.resolve(expandEnvVars(config.speakerModelPath));
+  const merged = { ...DEFAULTS, ...raw };
+  const model = (merged.model === "gigaam" ? "gigaam" : "parakeet") as ModelName;
+
+  // modelDir: use explicit value from config, otherwise derive from model
+  const modelDir = typeof raw.modelDir === "string"
+    ? raw.modelDir
+    : `./models/${getModelDir(model)}`;
+
+  const config: TranscriberConfig = {
+    model,
+    outputDir: expandEnvVars(String(merged.outputDir)),
+    audioDevice: merged.audioDevice as number | null,
+    sampleRate: Number(merged.sampleRate),
+    vadSilenceThreshold: Number(merged.vadSilenceThreshold),
+    vadThreshold: Number(merged.vadThreshold),
+    modelDir: path.resolve(expandEnvVars(modelDir)),
+    speakerModelPath: path.resolve(expandEnvVars(String(merged.speakerModelPath))),
+    speakerThreshold: Number(merged.speakerThreshold),
+  };
 
   return config;
 }

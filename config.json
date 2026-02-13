@@ -1,11 +1,11 @@
 {
+  "model": "parakeet",
   "outputDir": "%USERPROFILE%\\Documents\\Transcriptions\\",
   "audioDevice": null,
   "sampleRate": 16000,
   "vadSilenceThreshold": 800,
   "vadThreshold": 0.5,
-  "modelDir": "./models/sherpa-onnx-nemo-transducer-giga-am-v2-russian-2025-04-19",
   "vadModelPath": "./models/silero_vad.onnx",
   "speakerModelPath": "./models/3dspeaker_speech_eres2net_base_sv_zh-cn_3dspeaker_16k.onnx",
-  "speakerThreshold": 0.3
+  "speakerThreshold": 0.25
 }

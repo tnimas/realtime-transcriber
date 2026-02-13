@@ -1,17 +1,17 @@
 # Transcriber
 
-Real-time speech-to-text transcription service for Windows with speaker diarization. Captures microphone audio, detects speech segments, transcribes them using NVIDIA Parakeet, and identifies speakers — all locally, no cloud APIs.
+Real-time speech-to-text transcription service for Windows with speaker diarization. Captures microphone audio, detects speech segments, transcribes them using NVIDIA Parakeet or Sber GigaAM, and identifies speakers — all locally, no cloud APIs.
 
 ## How it works
 
 ```
 Microphone → Audio Capture → VAD → Transcriber → Speaker ID → JSONL file
-              (naudiodon)   (Silero) (Parakeet v3)  (3DSpeaker)
+              (naudiodon)  (Silero) (Parakeet/GigaAM) (3DSpeaker)
 ```
 
 1. **Audio Capture** — records mono 16kHz PCM from the system microphone via PortAudio
 2. **Voice Activity Detection** — Silero VAD detects speech start/end in real-time
-3. **Transcription** — NVIDIA Parakeet TDT v3 (0.6B, int8) transcribes each speech segment offline
+3. **Transcription** — NVIDIA Parakeet TDT v3 or Sber GigaAM v2 transcribes each speech segment offline
 4. **Speaker Diarization** — 3DSpeaker embedding model identifies and tracks speakers (`Speaker_1`, `Speaker_2`, ...)
 5. **Output** — appends JSONL entries to daily files in the output directory
 
@@ -40,7 +40,7 @@ Microphone → Audio Capture → VAD → Transcriber → Speaker ID → JSONL fi
 scripts\setup.bat
 ```
 
-This installs npm dependencies and downloads all models (~1.2 GB).
+This installs npm dependencies, lets you choose an ASR model, and downloads it.
 
 ### Manual setup
 
@@ -55,14 +55,15 @@ npx tsx scripts/download-models.ts
 |---|---|---|
 | Silero VAD | ~2 MB | Voice activity detection |
 | 3DSpeaker ERes2Net | ~25 MB | Speaker embedding extraction |
-| Parakeet TDT v3 int8 | ~1.2 GB | Speech-to-text (Multilang) |
+| Parakeet TDT v3 int8 | ~1.2 GB | Speech-to-text (Multilingual, default) |
+| GigaAM v2 | ~500 MB | Speech-to-text (Russian) |
 
 ## Usage
 
 ### Run standalone
 
 ```bash
-npx tsx src/index.ts
+node start.js
 ```
 
 Stop with `Ctrl+C` (graceful shutdown).
@@ -87,12 +88,12 @@ Edit `config.json`:
 
 ```json
 {
+  "model": "parakeet",
   "outputDir": "%USERPROFILE%\\Documents\\Transcriptions\\",
   "audioDevice": null,
   "sampleRate": 16000,
   "vadSilenceThreshold": 800,
   "vadThreshold": 0.5,
-  "modelDir": "./models/sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8",
   "vadModelPath": "./models/silero_vad.onnx",
   "speakerModelPath": "./models/3dspeaker_speech_eres2net_base_sv_zh-cn_3dspeaker_16k.onnx",
   "speakerThreshold": 0.4
@@ -101,6 +102,7 @@ Edit `config.json`:
 
 | Parameter | Default | Description |
 |---|---|---|
+| `model` | `"parakeet"` | ASR model: `"parakeet"` (multilingual) or `"gigaam"` (Russian) |
 | `outputDir` | `~/Documents/Transcriptions/` | Directory for daily JSONL files |
 | `audioDevice` | `null` | Microphone device ID (`null` = system default) |
 | `sampleRate` | `16000` | Audio sample rate in Hz |
@@ -108,6 +110,8 @@ Edit `config.json`:
 | `vadThreshold` | `0.5` | VAD probability threshold (0-1) |
 | `speakerModelPath` | `./models/3dspeaker_...onnx` | Path to speaker embedding model |
 | `speakerThreshold` | `0.4` | Speaker matching threshold (lower = more lenient) |
+
+Changing `model` in `config.json` will auto-download the new model on next service start.
 
 ## Architecture
 
@@ -117,7 +121,8 @@ src/
   service.ts            # Orchestrator — wires all components
   audio-capture.ts      # Microphone capture via naudiodon/PortAudio
   vad.ts                # Silero VAD with speech buffering state machine
-  transcriber.ts        # Offline ASR using sherpa-onnx Parakeet v3
+  transcriber.ts        # Offline ASR using sherpa-onnx (Parakeet / GigaAM)
+  model-downloader.ts   # Model download logic (shared with scripts)
   speaker-identifier.ts # Speaker diarization via sherpa-onnx embeddings
   file-writer.ts        # Daily-rotating JSONL writer
   config.ts             # Config loader with env var expansion
