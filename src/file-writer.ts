@@ -6,6 +6,7 @@ export interface TranscriptionEntry {
   ts: string;
   duration: number;
   text: string;
+  speaker: string;
 }
 
 export class FileWriter {

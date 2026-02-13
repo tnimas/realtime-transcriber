@@ -3,6 +3,7 @@ import { AudioCapture } from "./audio-capture";
 import { VoiceActivityDetector } from "./vad";
 import { Transcriber } from "./transcriber";
 import { FileWriter } from "./file-writer";
+import { SpeakerIdentifier } from "./speaker-identifier";
 import { loadConfig, TranscriberConfig } from "./config";
 
 export class TranscriberService {
@@ -11,6 +12,7 @@ export class TranscriberService {
   private vad!: VoiceActivityDetector;
   private transcriber!: Transcriber;
   private fileWriter!: FileWriter;
+  private speakerIdentifier!: SpeakerIdentifier;
   private running = false;
 
   constructor(configPath: string) {
@@ -36,17 +38,26 @@ export class TranscriberService {
     await this.vad.init();
     console.log("Silero VAD loaded");
 
+    this.speakerIdentifier = new SpeakerIdentifier(
+      this.config.speakerModelPath,
+      this.config.sampleRate,
+      this.config.speakerThreshold,
+    );
+    console.log("Speaker embedding model loaded");
+
     // Wire up: VAD speech event → transcribe → write
     this.vad.on("speech", (event: { audio: Float32Array; startTime: Date; duration: number }) => {
       try {
         const text = this.transcriber.transcribe(event.audio);
         if (text.length > 0) {
+          const speaker = this.speakerIdentifier.identify(event.audio);
           this.fileWriter.write({
             ts: event.startTime.toISOString(),
             duration: Math.round(event.duration * 100) / 100,
             text,
+            speaker,
           });
-          console.log(`[${event.startTime.toISOString()}] (${event.duration.toFixed(1)}s) ${text}`);
+          console.log(`[${event.startTime.toISOString()}] [${speaker}] (${event.duration.toFixed(1)}s) ${text}`);
         }
       } catch (err) {
         console.error("Transcription error:", err);

@@ -19,6 +19,19 @@ if (!fs.existsSync(vadPath)) {
   console.log("Silero VAD already exists, skipping.");
 }
 
+// Download 3DSpeaker embedding model
+const speakerPath = path.join(modelsDir, "3dspeaker_speech_eres2net_base_sv_zh-cn_3dspeaker_16k.onnx");
+if (!fs.existsSync(speakerPath)) {
+  console.log("Downloading 3DSpeaker embedding model...");
+  execSync(
+    `curl -SL -o "${speakerPath}" https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/3dspeaker_speech_eres2net_base_sv_zh-cn_3dspeaker_16k.onnx`,
+    { stdio: "inherit" }
+  );
+  console.log("3DSpeaker model downloaded.");
+} else {
+  console.log("3DSpeaker model already exists, skipping.");
+}
+
 // Download Parakeet v3
 const parakeetDir = path.join(modelsDir, "sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8");
 if (!fs.existsSync(parakeetDir)) {

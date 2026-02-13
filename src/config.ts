@@ -11,6 +11,8 @@ export interface TranscriberConfig {
   vadThreshold: number;
   modelDir: string;
   vadModelPath: string;
+  speakerModelPath: string;
+  speakerThreshold: number;
 }
 
 function expandEnvVars(str: string): string {
@@ -25,6 +27,8 @@ const DEFAULTS: TranscriberConfig = {
   vadThreshold: 0.5,
   modelDir: "./models/sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8",
   vadModelPath: "./models/silero_vad.onnx",
+  speakerModelPath: "./models/3dspeaker_speech_eres2net_base_sv_zh-cn_3dspeaker_16k.onnx",
+  speakerThreshold: 0.4,
 };
 
 export function loadConfig(configPath: string): TranscriberConfig {
@@ -40,6 +44,7 @@ export function loadConfig(configPath: string): TranscriberConfig {
   config.outputDir = expandEnvVars(config.outputDir);
   config.modelDir = path.resolve(expandEnvVars(config.modelDir));
   config.vadModelPath = path.resolve(expandEnvVars(config.vadModelPath));
+  config.speakerModelPath = path.resolve(expandEnvVars(config.speakerModelPath));
 
   return config;
 }
