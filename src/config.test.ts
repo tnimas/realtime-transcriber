@@ -1,35 +1,42 @@
-// src/config.test.ts
-import { loadConfig, TranscriberConfig } from "./config";
+import { describe, it, expect, afterAll } from "vitest";
+import { loadConfig } from "./config";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
 
-// Test: loads config and expands env vars
 const tmpDir = os.tmpdir();
 const testConfigPath = path.join(tmpDir, "test-config.json");
 
-fs.writeFileSync(testConfigPath, JSON.stringify({
-  outputDir: "%USERPROFILE%\\Documents\\Transcriptions\\",
-  audioDevice: null,
-  sampleRate: 16000,
-  vadSilenceThreshold: 800,
-  vadThreshold: 0.5,
-  modelDir: "./models/sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8",
-  vadModelPath: "./models/silero_vad.onnx"
-}));
+describe("loadConfig", () => {
+  afterAll(() => {
+    if (fs.existsSync(testConfigPath)) {
+      fs.unlinkSync(testConfigPath);
+    }
+  });
 
-const config = loadConfig(testConfigPath);
+  it("should load config and expand env vars", () => {
+    fs.writeFileSync(testConfigPath, JSON.stringify({
+      outputDir: "%USERPROFILE%\\Documents\\Transcriptions\\",
+      audioDevice: null,
+      sampleRate: 16000,
+      vadSilenceThreshold: 800,
+      vadThreshold: 0.5,
+      modelDir: "./models/sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8",
+      vadModelPath: "./models/silero_vad.onnx"
+    }));
 
-// outputDir should have %USERPROFILE% expanded
-console.assert(!config.outputDir.includes("%"), `Expected expanded path, got: ${config.outputDir}`);
-console.assert(config.outputDir.includes("Documents"), `Expected Documents in path, got: ${config.outputDir}`);
-console.assert(config.sampleRate === 16000, `Expected 16000, got: ${config.sampleRate}`);
-console.assert(config.audioDevice === null, `Expected null, got: ${config.audioDevice}`);
+    const config = loadConfig(testConfigPath);
 
-// Test: defaults when config file missing
-const defaults = loadConfig("nonexistent.json");
-console.assert(!defaults.outputDir.includes("%"), `Expected expanded default path`);
-console.assert(defaults.sampleRate === 16000, `Expected default sampleRate 16000`);
+    expect(config.outputDir).not.toContain("%");
+    expect(config.outputDir).toContain("Documents");
+    expect(config.sampleRate).toBe(16000);
+    expect(config.audioDevice).toBeNull();
+  });
 
-fs.unlinkSync(testConfigPath);
-console.log("config tests passed");
+  it("should use defaults when config file is missing", () => {
+    const defaults = loadConfig("nonexistent.json");
+
+    expect(defaults.outputDir).not.toContain("%");
+    expect(defaults.sampleRate).toBe(16000);
+  });
+});

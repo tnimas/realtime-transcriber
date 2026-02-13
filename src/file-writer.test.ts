@@ -1,4 +1,4 @@
-// src/file-writer.test.ts
+import { describe, it, expect, afterAll } from "vitest";
 import { FileWriter } from "./file-writer";
 import * as fs from "fs";
 import * as path from "path";
@@ -6,30 +6,32 @@ import * as os from "os";
 
 const testDir = path.join(os.tmpdir(), "transcriber-test-" + Date.now());
 
-const writer = new FileWriter(testDir);
+describe("FileWriter", () => {
+  const writer = new FileWriter(testDir);
 
-// Write two entries
-writer.write({ ts: new Date().toISOString(), duration: 2.5, text: "Hello world" });
-writer.write({ ts: new Date().toISOString(), duration: 1.2, text: "Test entry" });
+  afterAll(() => {
+    writer.close();
+    fs.rmSync(testDir, { recursive: true });
+  });
 
-writer.close();
+  it("should write entries to a dated .jsonl file", () => {
+    writer.write({ ts: new Date().toISOString(), duration: 2.5, text: "Hello world", speaker: "Speaker 1" });
+    writer.write({ ts: new Date().toISOString(), duration: 1.2, text: "Test entry", speaker: "Speaker 2" });
+    writer.close();
 
-// Verify file exists with today's date
-const today = new Date().toISOString().split("T")[0];
-const filePath = path.join(testDir, `${today}.jsonl`);
-console.assert(fs.existsSync(filePath), `File should exist: ${filePath}`);
+    const today = new Date().toISOString().split("T")[0];
+    const filePath = path.join(testDir, `${today}.jsonl`);
 
-// Verify content
-const lines = fs.readFileSync(filePath, "utf-8").trim().split("\n");
-console.assert(lines.length === 2, `Expected 2 lines, got ${lines.length}`);
+    expect(fs.existsSync(filePath)).toBe(true);
 
-const entry1 = JSON.parse(lines[0]);
-console.assert(entry1.text === "Hello world", `Expected 'Hello world', got '${entry1.text}'`);
-console.assert(entry1.duration === 2.5, `Expected 2.5, got ${entry1.duration}`);
+    const lines = fs.readFileSync(filePath, "utf-8").trim().split("\n");
+    expect(lines).toHaveLength(2);
 
-const entry2 = JSON.parse(lines[1]);
-console.assert(entry2.text === "Test entry", `Expected 'Test entry', got '${entry2.text}'`);
+    const entry1 = JSON.parse(lines[0]);
+    expect(entry1.text).toBe("Hello world");
+    expect(entry1.duration).toBe(2.5);
 
-// Cleanup
-fs.rmSync(testDir, { recursive: true });
-console.log("file-writer tests passed");
+    const entry2 = JSON.parse(lines[1]);
+    expect(entry2.text).toBe("Test entry");
+  });
+});
