@@ -84,7 +84,7 @@ npx tsx scripts/uninstall-service.ts
 
 ## Configuration
 
-Edit `config.json`:
+Edit `config.json` (created automatically from `config.example.json` on first run):
 
 ```json
 {

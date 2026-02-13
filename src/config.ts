@@ -32,6 +32,14 @@ const DEFAULTS: Omit<TranscriberConfig, "modelDir"> = {
 };
 
 export function loadConfig(configPath: string): TranscriberConfig {
+  // Auto-create config.json from config.example.json if missing
+  if (!fs.existsSync(configPath)) {
+    const examplePath = configPath.replace(/\.json$/, ".example.json");
+    if (fs.existsSync(examplePath)) {
+      fs.copyFileSync(examplePath, configPath);
+    }
+  }
+
   let raw: Record<string, unknown> = {};
   try {
     const content = fs.readFileSync(configPath, "utf-8");
