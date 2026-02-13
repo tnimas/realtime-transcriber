@@ -24,6 +24,7 @@ export class AudioCapture extends EventEmitter {
         sampleRate: options.sampleRate,
         deviceId,
         closeOnError: false,
+        highwaterMark: 65536,
       },
     });
 
