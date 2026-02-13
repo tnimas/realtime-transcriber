@@ -17,7 +17,7 @@ export class AudioCapture extends EventEmitter {
 
     const deviceId = options.deviceId ?? -1;
 
-    this.audioIO = new portAudio.AudioIO({
+    this.audioIO = portAudio.AudioIO({
       inOptions: {
         channelCount: 1,
         sampleFormat: portAudio.SampleFormat16Bit,

@@ -55,7 +55,7 @@ npx tsx scripts/download-models.ts
 |---|---|---|
 | Silero VAD | ~2 MB | Voice activity detection |
 | 3DSpeaker ERes2Net | ~25 MB | Speaker embedding extraction |
-| Parakeet TDT v3 int8 | ~1.2 GB | Speech-to-text (English) |
+| Parakeet TDT v3 int8 | ~1.2 GB | Speech-to-text (Multilang) |
 
 ## Usage
 

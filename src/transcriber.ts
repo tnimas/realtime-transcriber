@@ -1,6 +1,13 @@
 // src/transcriber.ts
 import * as sherpa_onnx from "sherpa-onnx-node";
+import * as fs from "fs";
 import * as path from "path";
+
+function resolveModel(modelDir: string, name: string): string {
+  const int8 = path.join(modelDir, `${name}.int8.onnx`);
+  if (fs.existsSync(int8)) return int8;
+  return path.join(modelDir, `${name}.onnx`);
+}
 
 export class Transcriber {
   private recognizer: any;
@@ -16,9 +23,9 @@ export class Transcriber {
       },
       modelConfig: {
         transducer: {
-          encoder: path.join(modelDir, "encoder.int8.onnx"),
-          decoder: path.join(modelDir, "decoder.int8.onnx"),
-          joiner: path.join(modelDir, "joiner.int8.onnx"),
+          encoder: resolveModel(modelDir, "encoder"),
+          decoder: resolveModel(modelDir, "decoder"),
+          joiner: resolveModel(modelDir, "joiner"),
         },
         tokens: path.join(modelDir, "tokens.txt"),
         numThreads: 4,
