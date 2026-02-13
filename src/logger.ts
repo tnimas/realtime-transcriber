@@ -1,4 +1,4 @@
-// src/file-writer.ts
+// src/logger.ts
 import * as fs from "fs";
 import * as path from "path";
 
@@ -9,7 +9,7 @@ export interface TranscriptionEntry {
   speaker: string;
 }
 
-export class FileWriter {
+export class TranscriptionLogger {
   private outputDir: string;
   private currentDate: string = "";
   private fd: number | null = null;

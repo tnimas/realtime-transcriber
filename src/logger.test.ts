@@ -1,13 +1,13 @@
 import { describe, it, expect, afterAll } from "vitest";
-import { FileWriter } from "./file-writer";
+import { TranscriptionLogger } from "./logger";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
 
 const testDir = path.join(os.tmpdir(), "transcriber-test-" + Date.now());
 
-describe("FileWriter", () => {
-  const writer = new FileWriter(testDir);
+describe("TranscriptionLogger", () => {
+  const writer = new TranscriptionLogger(testDir);
 
   afterAll(() => {
     writer.close();
