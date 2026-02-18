@@ -1,6 +1,6 @@
-# Transcriber
+# Realtime Transcriber
 
-Real-time speech-to-text transcription service for Windows with speaker diarization. Captures microphone audio, detects speech segments, transcribes them using NVIDIA Parakeet or Sber GigaAM, and identifies speakers — all locally, no cloud APIs.
+Real-time speech-to-text transcription for Windows with speaker diarization. Captures microphone audio, detects speech segments, transcribes them using NVIDIA Parakeet or Sber GigaAM, and identifies speakers — all locally, no cloud APIs.
 
 ## How it works
 
@@ -49,15 +49,6 @@ npm install
 npx tsx scripts/download-models.ts
 ```
 
-### Models downloaded
-
-| Model | Size | Purpose |
-|---|---|---|
-| Silero VAD | ~2 MB | Voice activity detection |
-| 3DSpeaker ERes2Net | ~25 MB | Speaker embedding extraction |
-| Parakeet TDT v3 int8 | ~1.2 GB | Speech-to-text (Multilingual, default) |
-| GigaAM v2 | ~500 MB | Speech-to-text (Russian) |
-
 ## Usage
 
 ### Run standalone
@@ -70,16 +61,18 @@ Stop with `Ctrl+C` (graceful shutdown).
 
 ### Install as Windows Service
 
-Run as Administrator:
+Optionally, you can run the transcriber as a background Windows Service that starts automatically on boot.
 
-```bash
-npx tsx scripts/install-service.ts
+Install (run as Administrator):
+
+```bat
+scripts\install-service.bat
 ```
 
 Uninstall:
 
-```bash
-npx tsx scripts/uninstall-service.ts
+```bat
+scripts\uninstall.bat
 ```
 
 ## Configuration
@@ -94,7 +87,6 @@ Edit `config.json` (created automatically from `config.example.json` on first ru
   "sampleRate": 16000,
   "vadSilenceThreshold": 800,
   "vadThreshold": 0.5,
-  "vadModelPath": "./models/silero_vad.onnx",
   "speakerModelPath": "./models/3dspeaker_speech_eres2net_base_sv_zh-cn_3dspeaker_16k.onnx",
   "speakerThreshold": 0.4
 }
@@ -111,7 +103,16 @@ Edit `config.json` (created automatically from `config.example.json` on first ru
 | `speakerModelPath` | `./models/3dspeaker_...onnx` | Path to speaker embedding model |
 | `speakerThreshold` | `0.4` | Speaker matching threshold (lower = more lenient) |
 
-Changing `model` in `config.json` will auto-download the new model on next service start.
+Changing `model` in `config.json` will auto-download the new model on next start.
+
+### Models
+
+| Model | Size | Purpose |
+|---|---|---|
+| Silero VAD | ~2 MB | Voice activity detection |
+| 3DSpeaker ERes2Net | ~25 MB | Speaker embedding extraction |
+| Parakeet TDT v3 int8 | ~1.2 GB | Speech-to-text (multilingual, default) |
+| GigaAM v2 | ~500 MB | Speech-to-text (Russian) |
 
 ## Architecture
 
@@ -122,15 +123,15 @@ src/
   audio-capture.ts      # Microphone capture via naudiodon/PortAudio
   vad.ts                # Silero VAD with speech buffering state machine
   transcriber.ts        # Offline ASR using sherpa-onnx (Parakeet / GigaAM)
-  model-downloader.ts   # Model download logic (shared with scripts)
   speaker-identifier.ts # Speaker diarization via sherpa-onnx embeddings
-  file-writer.ts        # Daily-rotating JSONL writer
+  logger.ts             # Daily-rotating JSONL writer
   config.ts             # Config loader with env var expansion
+  model-downloader.ts   # Model download logic (shared with scripts)
 scripts/
   setup.bat             # One-click setup
+  install-service.bat   # Windows Service installer
+  uninstall.bat         # Service removal and cleanup
   download-models.ts    # Model downloader
-  install-service.ts    # Windows Service installer
-  uninstall-service.ts  # Windows Service uninstaller
 ```
 
 ## Tech stack

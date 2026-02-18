@@ -45,29 +45,10 @@ echo Downloading models...
 call npx tsx scripts/download-models.ts --model %MODEL_NAME%
 
 echo.
-echo Setup complete!
-echo.
-set /p INSTALL_SVC="Install and start as Windows Service? [Y/n]: "
-if /i "%INSTALL_SVC%"=="n" goto :skip_service
-
-echo.
-echo Installing Windows Service...
-call npx tsx scripts/install-service.ts >nul
-if %ERRORLEVEL% neq 0 (
-    echo ERROR: Service installation failed. Try running setup as Administrator.
-) else (
-    echo Service installed and started.
-)
-goto :done
-
-:skip_service
-echo.
-echo To run standalone:
+echo Setup complete! To run:
 echo   node start.js
 echo.
-echo To install as Windows Service later (run as Administrator):
-echo   npx tsx scripts/install-service.ts
-
-:done
+echo To install as a Windows Service (run as Administrator):
+echo   scripts\install-service.bat
 echo.
 pause
