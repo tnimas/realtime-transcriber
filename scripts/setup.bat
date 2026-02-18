@@ -1,4 +1,5 @@
 @echo off
+cd /d "%~dp0.."
 echo === Transcriber Service Setup ===
 
 where node >nul 2>&1
@@ -41,7 +42,7 @@ echo Writing config.json with model=%MODEL_NAME%...
 >>config.json echo }
 
 echo Downloading models...
-call npx tsx download-models.ts --model %MODEL_NAME%
+call npx tsx scripts/download-models.ts --model %MODEL_NAME%
 
 echo.
 echo Setup complete!
@@ -51,7 +52,7 @@ if /i "%INSTALL_SVC%"=="n" goto :skip_service
 
 echo.
 echo Installing Windows Service...
-call npx tsx scripts/install-service.ts
+call npx tsx scripts/install-service.ts >nul
 if %ERRORLEVEL% neq 0 (
     echo ERROR: Service installation failed. Try running setup as Administrator.
 ) else (
