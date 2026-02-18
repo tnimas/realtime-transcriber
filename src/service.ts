@@ -78,6 +78,13 @@ export class TranscriberService {
     });
 
     // Start audio capture
+    const devices = AudioCapture.listDevices();
+    const activeDevice = this.config.audioDevice !== null
+      ? devices.find(d => d.id === this.config.audioDevice)
+      : devices.find(d => d.id === -1) || devices[0];
+    const deviceName = activeDevice ? `${activeDevice.name} (id=${activeDevice.id})` : `id=${this.config.audioDevice ?? "default"}`;
+    console.log(`Microphone: ${deviceName}`);
+
     this.audioCapture = new AudioCapture({
       deviceId: this.config.audioDevice,
       sampleRate: this.config.sampleRate,
@@ -95,7 +102,7 @@ export class TranscriberService {
 
     this.audioCapture.start();
     this.running = true;
-    console.log("Service started. Listening...");
+    console.log(`Service started at ${new Date().toISOString()}. Listening...`);
   }
 
   async stop(): Promise<void> {

@@ -4,7 +4,7 @@ const Service = require("node-windows").Service;
 
 const svc = new Service({
   name: "Transcriber",
-  script: path.resolve(__dirname, "..", "src", "index.ts"),
+  script: path.resolve(__dirname, "..", "start.js"),
 });
 
 svc.on("uninstall", () => {
