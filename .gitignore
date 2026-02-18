@@ -1,5 +1,8 @@
 node_modules/
 dist/
 models/
+daemon/
 config.json
+.claude/
 *.log
+nul

@@ -35,11 +35,6 @@ echo Service removed.
 
 :cleanup
 
-echo Killing node processes that may lock files...
-taskkill /f /im node.exe >nul 2>&1
-taskkill /f /im esbuild.exe >nul 2>&1
-timeout /t 2 /nobreak >nul
-
 echo Removing daemon files...
 if exist daemon rmdir /s /q daemon
 
@@ -51,6 +46,12 @@ if exist node_modules rmdir /s /q node_modules
 
 echo Removing config.json...
 if exist config.json del config.json
+
+if exist node_modules (
+    echo.
+    echo WARNING: Some files could not be deleted. Close any running Node
+    echo processes and try again, or delete node_modules manually.
+)
 
 echo.
 echo Uninstall complete. Run scripts\setup.bat for a clean install.
