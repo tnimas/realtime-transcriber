@@ -15,8 +15,10 @@ downloadSpeaker(modelsDir);
 if (modelArg === "all") {
   downloadModel("parakeet", modelsDir);
   downloadModel("gigaam", modelsDir);
-} else {
+} else if (modelArg === "parakeet" || modelArg === "gigaam") {
   downloadModel(modelArg as ModelName, modelsDir);
+} else {
+  throw new Error(`Unsupported --model value: ${modelArg}. Use parakeet, gigaam, or all.`);
 }
 
 console.log("All models ready.");

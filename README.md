@@ -87,6 +87,14 @@ Edit `config.json` (created automatically from `config.example.json` on first ru
   "sampleRate": 16000,
   "vadSilenceThreshold": 800,
   "vadThreshold": 0.5,
+  "vadInputTargetPeak": 0.12,
+  "vadInputMaxGain": 24,
+  "vadInputNoiseGateRms": 0,
+  "asrOverlapMs": 300,
+  "asrOverlapMaxGapMs": 600,
+  "asrTargetPeak": 0.65,
+  "asrMaxGain": 8,
+  "asrNoiseGateRms": 0,
   "speakerModelPath": "./models/3dspeaker_speech_eres2net_base_sv_zh-cn_3dspeaker_16k.onnx",
   "speakerThreshold": 0.4
 }
@@ -97,11 +105,25 @@ Edit `config.json` (created automatically from `config.example.json` on first ru
 | `model` | `"parakeet"` | ASR model: `"parakeet"` (multilingual) or `"gigaam"` (Russian) |
 | `outputDir` | `~/Documents/Transcriptions/` | Directory for daily JSONL files |
 | `audioDevice` | `null` | Microphone device ID (`null` = system default) |
-| `sampleRate` | `16000` | Audio sample rate in Hz |
+| `sampleRate` | `16000` | Preferred microphone capture sample rate in Hz |
 | `vadSilenceThreshold` | `800` | Silence duration (ms) before speech segment ends |
 | `vadThreshold` | `0.5` | VAD probability threshold (0-1) |
+| `vadInputTargetPeak` | `0.12` | Target peak level for VAD input auto-gain |
+| `vadInputMaxGain` | `24` | Maximum gain multiplier applied before VAD |
+| `vadInputNoiseGateRms` | `0` | RMS noise gate before VAD (`0` disables gating) |
+| `asrOverlapMs` | `300` | Context tail (ms) prepended to next segment for ASR |
+| `asrOverlapMaxGapMs` | `600` | Max pause between segments where overlap is applied |
+| `asrTargetPeak` | `0.65` | Target peak level for ASR segment normalization |
+| `asrMaxGain` | `8` | Maximum gain multiplier applied before ASR |
+| `asrNoiseGateRms` | `0` | RMS noise gate before ASR (`0` disables gating) |
 | `speakerModelPath` | `./models/3dspeaker_...onnx` | Path to speaker embedding model |
 | `speakerThreshold` | `0.4` | Speaker matching threshold (lower = more lenient) |
+
+To pick a specific microphone, run `npm run list-devices` and set `audioDevice` to the desired `id` in `config.json`.
+On Windows, the same microphone can appear multiple times (`MME`, `WASAPI`, `WDM-KS`); this is expected.
+If a device does not support the configured sample rate, the app automatically falls back to a supported rate and logs it.
+You can inspect input level with `npm run mic-level -- --device <id> --sample-rate 16000`.
+If background hiss triggers false speech segments, try `vadInputNoiseGateRms` around `0.002-0.01` and then tune `vadInputTargetPeak`/`vadInputMaxGain`.
 
 Changing `model` in `config.json` will auto-download the new model on next start.
 

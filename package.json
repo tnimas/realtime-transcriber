@@ -8,7 +8,9 @@
   },
   "scripts": {
     "start": "node start.js",
-    "test": "vitest run"
+    "test": "vitest run",
+    "list-devices": "tsx scripts/list-audio-devices.ts",
+    "mic-level": "tsx scripts/mic-level.ts"
   },
   "keywords": [],
   "author": "",

@@ -27,10 +27,18 @@ const MODELS: Record<ModelName, ModelInfo> = {
 const VAD_URL = "https://github.com/snakers4/silero-vad/raw/master/src/silero_vad/data/silero_vad.onnx";
 const SPEAKER_URL = "https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/3dspeaker_speech_eres2net_base_sv_zh-cn_3dspeaker_16k.onnx";
 
+function getModelInfo(model: string): ModelInfo {
+  const info = MODELS[model as ModelName];
+  if (!info) {
+    throw new Error(`Unsupported model: ${model}. Expected one of: ${Object.keys(MODELS).join(", ")}`);
+  }
+  return info;
+}
+
 export function downloadModel(model: ModelName, modelsDir: string): void {
   fs.mkdirSync(modelsDir, { recursive: true });
 
-  const info = MODELS[model];
+  const info = getModelInfo(model);
   const modelDir = path.join(modelsDir, info.dir);
 
   if (fs.existsSync(modelDir)) {
@@ -72,5 +80,5 @@ export function downloadSpeaker(modelsDir: string): void {
 }
 
 export function getModelDir(model: ModelName): string {
-  return MODELS[model].dir;
+  return getModelInfo(model).dir;
 }
