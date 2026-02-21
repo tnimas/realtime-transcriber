@@ -1,9 +1,15 @@
 @echo off
 cd /d "%~dp0.."
-echo === Transcriber Service Uninstall ===
+echo === Transcriber Cleanup ===
 echo.
-echo This will remove the service, models, and dependencies.
+echo This will remove local runtime files:
+echo   - daemon
+echo   - models
+echo   - node_modules
+echo   - config.json
+echo.
 echo Transcription logs will NOT be deleted.
+echo Windows Service will NOT be modified.
 echo.
 set /p CONFIRM="Continue? [y/N]: "
 if /i not "%CONFIRM%"=="y" (
@@ -13,28 +19,6 @@ if /i not "%CONFIRM%"=="y" (
 )
 
 echo.
-sc query transcriber.exe >nul 2>&1
-if %ERRORLEVEL% neq 0 (
-    echo No service found, skipping.
-    goto :cleanup
-)
-
-echo Stopping Windows Service...
-sc stop transcriber.exe >nul 2>&1
-
-:wait_stop
-sc query transcriber.exe 2>nul | find "STOPPED" >nul 2>&1
-if %ERRORLEVEL% neq 0 (
-    timeout /t 1 /nobreak >nul
-    goto :wait_stop
-)
-
-echo Removing Windows Service...
-sc delete transcriber.exe >nul 2>&1
-echo Service removed.
-
-:cleanup
-
 echo Removing daemon files...
 if exist daemon rmdir /s /q daemon
 
@@ -54,6 +38,6 @@ if exist node_modules (
 )
 
 echo.
-echo Uninstall complete. Run scripts\setup.bat for a clean install.
+echo Cleanup complete. Run scripts\setup.bat for a clean install.
 echo.
 pause

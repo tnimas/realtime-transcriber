@@ -69,10 +69,16 @@ Install (run as Administrator):
 scripts\install-service.bat
 ```
 
-Uninstall:
+Uninstall service:
 
 ```bat
-scripts\uninstall.bat
+scripts\uninstall-service.bat
+```
+
+Clean local runtime files (`models`, `node_modules`, `config.json`, `daemon`):
+
+```bat
+scripts\clean.bat
 ```
 
 ## Configuration
@@ -152,7 +158,8 @@ src/
 scripts/
   setup.bat             # One-click setup
   install-service.bat   # Windows Service installer
-  uninstall.bat         # Service removal and cleanup
+  uninstall-service.bat # Windows Service removal
+  clean.bat             # Local runtime files cleanup
   download-models.ts    # Model downloader
 ```
 

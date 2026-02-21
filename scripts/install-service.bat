@@ -2,22 +2,31 @@
 cd /d "%~dp0.."
 echo === Install Transcriber as Windows Service ===
 echo.
-echo This requires Administrator privileges.
-echo.
 
-sc query transcriber.exe >nul 2>&1
-if %ERRORLEVEL% equ 0 (
-    echo Service already installed. Uninstall first with scripts\uninstall.bat
+if exist daemon rmdir /s /q daemon >nul 2>&1
+
+echo Installing Windows Service...
+call npx tsx scripts/install-service.ts
+if %ERRORLEVEL% neq 0 (
+    echo ERROR: Installation failed. Run as Administrator.
+    echo.
     pause
     exit /b 1
 )
 
-echo Installing Windows Service...
-call npx tsx scripts/install-service.ts >nul
-if %ERRORLEVEL% neq 0 (
-    echo ERROR: Installation failed. Make sure you are running as Administrator.
-) else (
-    echo Service installed and started.
+set "SERVICE_NAME="
+sc.exe query "Transcriber" >nul 2>&1 && set "SERVICE_NAME=Transcriber"
+if not defined SERVICE_NAME sc.exe query "transcriber.exe" >nul 2>&1 && set "SERVICE_NAME=transcriber.exe"
+if not defined SERVICE_NAME sc.exe query "transcriber" >nul 2>&1 && set "SERVICE_NAME=transcriber"
+
+if not defined SERVICE_NAME (
+    echo ERROR: Service was not registered.
+    echo Try scripts\uninstall-service.bat and run this script again.
+    echo.
+    pause
+    exit /b 1
 )
+
+echo Service installed: "%SERVICE_NAME%"
 echo.
 pause

@@ -11,6 +11,11 @@ if %ERRORLEVEL% neq 0 (
 
 echo Installing dependencies...
 call npm install
+if %ERRORLEVEL% neq 0 (
+    echo ERROR: npm install failed.
+    pause
+    exit /b 1
+)
 
 echo.
 echo Select ASR model:
@@ -36,13 +41,25 @@ echo Writing config.json with model=%MODEL_NAME%...
 >>config.json echo   "sampleRate": 16000,
 >>config.json echo   "vadSilenceThreshold": 800,
 >>config.json echo   "vadThreshold": 0.5,
->>config.json echo   "vadModelPath": "./models/silero_vad.onnx",
+>>config.json echo   "vadInputTargetPeak": 0.12,
+>>config.json echo   "vadInputMaxGain": 24,
+>>config.json echo   "vadInputNoiseGateRms": 0,
+>>config.json echo   "asrOverlapMs": 300,
+>>config.json echo   "asrOverlapMaxGapMs": 600,
+>>config.json echo   "asrTargetPeak": 0.65,
+>>config.json echo   "asrMaxGain": 8,
+>>config.json echo   "asrNoiseGateRms": 0,
 >>config.json echo   "speakerModelPath": "./models/3dspeaker_speech_eres2net_base_sv_zh-cn_3dspeaker_16k.onnx",
 >>config.json echo   "speakerThreshold": 0.4
 >>config.json echo }
 
 echo Downloading models...
 call npx tsx scripts/download-models.ts --model %MODEL_NAME%
+if %ERRORLEVEL% neq 0 (
+    echo ERROR: Model download failed.
+    pause
+    exit /b 1
+)
 
 echo.
 echo Setup complete! To run:
